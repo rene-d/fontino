@@ -1,0 +1,7 @@
+build/
+.vscode/.ropeproject/
+
+.pio
+.pioenvs
+.piolibdeps
+.vscode/.browse.c_cpp.db*
