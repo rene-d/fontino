@@ -17,9 +17,65 @@ class LedControl
     const char *on, *off;
 
   public:
-    LedControl(int columns = 10)
+    LedControl(int /*DIN*/ = 0, int /*CLK*/ = 0, int /*CS*/ = 0, int /*maxInUse*/ = 0)
     {
-        setOnOff();
+        selectColor();
+    }
+
+    virtual ~LedControl()
+    {
+        closeSimu();
+    }
+
+    void shutdown(int /*num*/, bool)
+    {
+    }
+
+    void setIntensity(int /*num*/, byte /*intensity*/)
+    {
+    }
+
+    void clearDisplay(int /*num*/)
+    {
+    }
+
+    void setLed(int /*num*/, int row, int col, byte b)
+    {
+        if (row == 0 && col == 0)
+            printf("\033[0;37m╭────────╮\033[0m\n");
+
+        if (col == 0)
+            printf("\033[0;37m│\033[0m");
+        printf("%s", b ? on : off);
+        if (col == 7)
+            printf("\033[0;37m│\033[0m\n");
+
+        if (row == 7 && col == 7)
+            printf("\033[0;37m╰────────╯\033[0m\n");
+    }
+
+    void setRow(int /*num*/, int row, byte b)
+    {
+        if (row == 0)
+            printf("\033[0;37m╭────────╮\033[0m\n");
+
+        printf("\033[0;37m│\033[0m");
+        for (int i = 0; i < 8; ++i)
+            printf("%s", (b & (1 << (7 - i))) ? on : off);
+        printf("\033[0;37m│\033[0m\n");
+
+        if (row == 7)
+            printf("\033[0;37m╰────────╯\033[0m\n");
+    }
+
+    //---------------------------------------------------------------
+
+    // pipe output through a script to display more matrices horizontally
+    void simu(int columns = 10)
+    {
+        closeSimu();
+        if (columns <= 1)
+            return;
 
         struct stat st;
         if (stat("./horizontal.py", &st) == 0 && (st.st_mode & S_IXUSR))
@@ -39,7 +95,7 @@ class LedControl
         }
     }
 
-    virtual ~LedControl()
+    void closeSimu()
     {
         if (pipe != nullptr)
         {
@@ -50,30 +106,16 @@ class LedControl
         }
     }
 
-    void setRow(int /*num*/, int row, byte b)
-    {
-        if (row == 0)
-            printf("\033[0;37m╭────────╮\033[0m\n");
-
-        printf("\033[0;37m│\033[0m");
-        for (int i = 0; i < 8; ++i)
-            printf("%s", (b & (1 << (7 - i))) ? on : off);
-        printf("\033[0;37m│\033[0m\n");
-
-        if (row == 7)
-            printf("\033[0;37m╰────────╯\033[0m\n");
-    }
-
-    //
-    void setOnOff(int mode = 0)
+    // select red or green led
+    void selectColor(int mode = 0)
     {
         switch (mode)
         {
-        case 0:
+        case 0: /* red */
             on = "\033[38;5;196m●\033[0m";
             off = "\033[38;5;238m●\033[0m";
             break;
-        case 1:
+        case 1: /* green */
             on = "\033[38;5;46m●\033[0m";
             off = "\033[38;5;238m●\033[0m";
             break;

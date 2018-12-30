@@ -14,14 +14,16 @@
 
 int main(int argc, char *argv[])
 {
-    LedControl lc(10);
+    LedControl lc;
+
+    lc.simu();
 
     int a = argc == 1 ? 0 : atoi(argv[1]);
 
     switch (a)
     {
     case 0:
-        lc.setOnOff(1);
+        lc.selectColor(1);
         printChar(lc, '0' + ROTATION_0);
         displayString(lc, "PR", 0, true, ROTATION_0);
         printChar(lc, '0' + ROTATION_90);
